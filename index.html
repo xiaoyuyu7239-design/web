@@ -1,0 +1,1967 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>水千丞 188 男团人物关系星图</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #020713;
+      --bg-2: #071323;
+      --panel: rgba(5, 15, 31, 0.78);
+      --panel-strong: rgba(7, 18, 35, 0.9);
+      --line: rgba(186, 219, 255, 0.18);
+      --text: #ecf6ff;
+      --muted: #98aac0;
+      --gold: #ffd78a;
+      --cyan: #93e3ff;
+      --blue: #8fb9ff;
+      --rose: #ffc3d5;
+      --green: #aef0be;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.38);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 18%, rgba(57, 111, 155, 0.22), transparent 31%),
+        radial-gradient(circle at 78% 30%, rgba(177, 151, 93, 0.13), transparent 25%),
+        radial-gradient(circle at 48% 78%, rgba(103, 153, 186, 0.19), transparent 35%),
+        linear-gradient(145deg, #02050d 0%, #071524 48%, #020713 100%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      border: 0;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    #starMap {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    #starMap.dragging {
+      cursor: grabbing;
+    }
+
+    .app-shell {
+      position: relative;
+      min-height: 100dvh;
+      pointer-events: none;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      right: 388px;
+      display: grid;
+      gap: 10px;
+      pointer-events: auto;
+      z-index: 4;
+    }
+
+    .brand-row,
+    .control-row,
+    .filter-row,
+    .bottom-panel,
+    .detail-panel {
+      border: 1px solid rgba(184, 219, 255, 0.18);
+      background: linear-gradient(145deg, rgba(4, 13, 28, 0.84), rgba(5, 19, 37, 0.68));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .brand-row {
+      position: relative;
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 58px;
+      padding: 10px 12px 10px 14px;
+      border-radius: 8px;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mark-star {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      filter: drop-shadow(0 0 12px rgba(255, 213, 138, 0.88));
+    }
+
+    .brand-title {
+      min-width: 0;
+    }
+
+    .brand-title h1 {
+      margin: 0;
+      overflow: hidden;
+      color: #f6fbff;
+      font-size: clamp(18px, 2.4vw, 28px);
+      font-weight: 750;
+      line-height: 1.12;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .brand-title span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .search-wrap {
+      position: relative;
+      width: min(360px, 42vw);
+      flex: 0 1 auto;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 38px;
+      border: 1px solid rgba(184, 219, 255, 0.22);
+      border-radius: 8px;
+      outline: 0;
+      background: rgba(2, 8, 18, 0.72);
+      color: var(--text);
+      padding: 0 40px 0 12px;
+    }
+
+    .search-input:focus {
+      border-color: rgba(147, 227, 255, 0.72);
+      box-shadow: 0 0 0 3px rgba(147, 227, 255, 0.12);
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      width: 18px;
+      height: 18px;
+      transform: translateY(-50%);
+      color: var(--cyan);
+      opacity: 0.86;
+      pointer-events: none;
+    }
+
+    .search-results {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: min(420px, 82vw);
+      max-height: 310px;
+      overflow: auto;
+      border: 1px solid rgba(184, 219, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(3, 11, 24, 0.96);
+      box-shadow: var(--shadow);
+      padding: 6px;
+      display: none;
+      z-index: 40;
+    }
+
+    .search-results.is-open {
+      display: grid;
+      gap: 4px;
+    }
+
+    .result-button,
+    .relation-button,
+    .important-button {
+      width: 100%;
+      display: grid;
+      border-radius: 6px;
+      background: transparent;
+      text-align: left;
+    }
+
+    .result-button {
+      grid-template-columns: 10px 1fr auto;
+      align-items: center;
+      gap: 9px;
+      padding: 8px;
+    }
+
+    .result-button:hover,
+    .relation-button:hover,
+    .important-button:hover,
+    .chip:hover,
+    .tool-button:hover {
+      background: rgba(151, 199, 255, 0.12);
+    }
+
+    .result-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      box-shadow: 0 0 12px currentColor;
+    }
+
+    .result-name {
+      min-width: 0;
+      overflow: hidden;
+      color: #f7fbff;
+      font-size: 14px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .result-meta {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .control-row {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      overflow-x: auto;
+      padding: 8px;
+      border-radius: 8px;
+      scrollbar-width: thin;
+    }
+
+    .tool-button,
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 34px;
+      border: 1px solid rgba(184, 219, 255, 0.18);
+      border-radius: 8px;
+      background: rgba(7, 21, 42, 0.7);
+      color: #ddecff;
+      padding: 0 11px;
+      white-space: nowrap;
+    }
+
+    .tool-button svg {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+    }
+
+    .tool-button.is-active,
+    .chip.is-active {
+      border-color: rgba(255, 215, 138, 0.7);
+      background: rgba(255, 215, 138, 0.13);
+      color: #fff7df;
+      box-shadow: inset 0 0 18px rgba(255, 215, 138, 0.1), 0 0 20px rgba(255, 215, 138, 0.08);
+    }
+
+    .filter-row {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 8px;
+      padding: 9px;
+      border-radius: 8px;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .filter-label {
+      width: 42px;
+      flex: 0 0 auto;
+      color: #bed2e8;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chip-list {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: thin;
+    }
+
+    .chip {
+      min-height: 28px;
+      padding: 0 9px;
+      color: #cfe0f2;
+      font-size: 12px;
+    }
+
+    .chip i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .detail-panel {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      bottom: 112px;
+      width: 352px;
+      overflow: auto;
+      border-radius: 8px;
+      padding: 16px;
+      pointer-events: auto;
+      z-index: 5;
+    }
+
+    .detail-top {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .detail-name {
+      margin: 0;
+      color: #fffaf0;
+      font-size: 26px;
+      line-height: 1.12;
+      text-shadow: 0 0 18px rgba(255, 215, 138, 0.32);
+      word-break: break-word;
+    }
+
+    .close-panel {
+      display: none;
+      width: 32px;
+      height: 32px;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #dbeaff;
+    }
+
+    .alias-line {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 14px 0;
+    }
+
+    .tag {
+      border: 1px solid rgba(184, 219, 255, 0.17);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #d9eaff;
+      padding: 5px 8px;
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .bio {
+      margin: 0 0 16px;
+      color: #d7e5f4;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 16px 0 8px;
+      color: #fff6dd;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .section-title::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 12px var(--gold);
+    }
+
+    .relation-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .relation-button {
+      grid-template-columns: 1fr;
+      gap: 3px;
+      border: 1px solid rgba(184, 219, 255, 0.12);
+      padding: 9px;
+      color: #dceaff;
+    }
+
+    .relation-button strong {
+      color: #fbfdff;
+      font-size: 13px;
+    }
+
+    .relation-button span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .bottom-panel {
+      position: fixed;
+      left: 16px;
+      right: 388px;
+      bottom: 16px;
+      display: grid;
+      gap: 8px;
+      border-radius: 8px;
+      padding: 10px;
+      pointer-events: auto;
+      z-index: 4;
+    }
+
+    .bottom-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: #d9e8f7;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .bottom-count {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .important-list {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(150px, 1fr);
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 1px;
+      scrollbar-width: thin;
+    }
+
+    .important-button {
+      min-height: 58px;
+      border: 1px solid rgba(184, 219, 255, 0.14);
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      column-gap: 9px;
+      padding: 9px;
+      color: #eaf3ff;
+    }
+
+    .important-orb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      box-shadow: 0 0 18px currentColor;
+    }
+
+    .important-text {
+      min-width: 0;
+    }
+
+    .important-name {
+      overflow: hidden;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .important-meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 98px;
+      transform: translateX(-50%) translateY(12px);
+      border: 1px solid rgba(255, 215, 138, 0.24);
+      border-radius: 8px;
+      background: rgba(5, 14, 28, 0.88);
+      color: #fff6de;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      padding: 10px 12px;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+      z-index: 12;
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    ::selection {
+      background: rgba(255, 215, 138, 0.28);
+    }
+
+    @media (max-width: 980px) {
+      .topbar {
+        right: 16px;
+      }
+
+      .brand-row {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .search-wrap {
+        width: 100%;
+      }
+
+      .detail-panel {
+        top: auto;
+        left: 12px;
+        right: 12px;
+        bottom: 136px;
+        width: auto;
+        max-height: 34dvh;
+        transform: translateY(calc(100% + 110px));
+        transition: transform 220ms ease;
+      }
+
+      body.panel-open .detail-panel {
+        transform: translateY(0);
+      }
+
+      .close-panel {
+        display: inline-grid;
+        place-items: center;
+      }
+
+      .bottom-panel {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+      }
+
+      .important-list {
+        grid-auto-columns: minmax(136px, 44vw);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        gap: 8px;
+      }
+
+      .brand-row {
+        min-height: auto;
+        padding: 10px;
+      }
+
+      .brand-title h1 {
+        font-size: 18px;
+      }
+
+      .brand-title span {
+        display: none;
+      }
+
+      .control-row {
+        padding: 7px;
+      }
+
+      .tool-button {
+        min-height: 32px;
+        padding: 0 9px;
+        font-size: 12px;
+      }
+
+      .filter-row {
+        gap: 7px;
+        padding: 8px;
+      }
+
+      .filter-group {
+        align-items: center;
+        flex-direction: row;
+        gap: 8px;
+      }
+
+      .filter-label {
+        width: 42px;
+      }
+
+      .detail-name {
+        font-size: 22px;
+      }
+
+      .bottom-panel {
+        padding: 8px;
+      }
+
+      .toast {
+        width: calc(100vw - 24px);
+        bottom: 78px;
+        text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starMap" aria-label="188男团人物关系星图"></canvas>
+
+  <main class="app-shell">
+    <section class="topbar" aria-label="星图控制区">
+      <div class="brand-row">
+        <div class="brand-mark">
+          <svg class="mark-star" viewBox="0 0 64 64" aria-hidden="true">
+            <path fill="#ffe3a3" d="M32 2l4.8 19.4L56 26.1l-17.3 9.7L32 62l-6.7-26.2L8 26.1l19.2-4.7L32 2z"/>
+            <path fill="#ffffff" opacity=".72" d="M32 13l2.8 11.4L46 27.1l-10.1 5.7L32 48l-3.9-15.2L18 27.1l11.2-2.7L32 13z"/>
+          </svg>
+          <div class="brand-title">
+            <h1>水千丞 188 男团人物关系星图</h1>
+            <span>MVP 示例数据 · 纯静态星云网络</span>
+          </div>
+        </div>
+        <div class="search-wrap">
+          <input id="searchInput" class="search-input" type="search" placeholder="搜索名称、别名、分类、身份" autocomplete="off">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-3.8-3.8"></path>
+          </svg>
+          <div id="searchResults" class="search-results" role="listbox"></div>
+        </div>
+      </div>
+
+      <div class="control-row" aria-label="星图按钮">
+        <button id="showAllBtn" class="tool-button" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12h18"/><path d="M12 3v18"/></svg>
+          显示全部
+        </button>
+        <button id="rotateBtn" class="tool-button is-active" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+          停止旋转
+        </button>
+        <button id="layoutBtn" class="tool-button" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M12 7v4"/><path d="M7.4 16.5 11 12"/><path d="m13 12 3.6 4.5"/></svg>
+          分层布局
+        </button>
+        <button id="resetBtn" class="tool-button" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg>
+          重置视图
+        </button>
+      </div>
+
+      <div class="filter-row" aria-label="分类筛选">
+        <div class="filter-group">
+          <span class="filter-label">星域</span>
+          <div id="categoryFilters" class="chip-list"></div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">身份</span>
+          <div id="roleFilters" class="chip-list"></div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">等级</span>
+          <div id="levelFilters" class="chip-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="detail-panel" aria-live="polite">
+      <div class="detail-top">
+        <div>
+          <h2 id="detailName" class="detail-name">188男团</h2>
+          <p id="detailAlias" class="alias-line"></p>
+        </div>
+        <button id="closePanelBtn" class="close-panel" type="button" aria-label="关闭详情">×</button>
+      </div>
+      <div id="detailTags" class="tag-row"></div>
+      <p id="detailBio" class="bio"></p>
+      <div class="section-title">主要关系</div>
+      <div id="detailRelations" class="relation-list"></div>
+    </aside>
+
+    <section class="bottom-panel" aria-label="重要节点">
+      <div class="bottom-head">
+        <span>关系最多 / 最重要节点</span>
+        <span id="visibleCount" class="bottom-count"></span>
+      </div>
+      <div id="importantList" class="important-list"></div>
+    </section>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <script>
+    const graphData = {
+      nodes: [
+        {
+          id: "group188",
+          name: "188男团",
+          alias: ["188宇宙", "188群像", "男团概念"],
+          category: "群像核心",
+          rank: "Top 1",
+          level: "S+",
+          role: "关系网络中枢",
+          faction: "群像星域",
+          era: "现代都市",
+          bio: "水千丞作品读者常用的群像称呼。本 MVP 用它作为星图中心，把不同作品、人物与交叉关系串成一个可替换的数据模型。",
+          importance: 10
+        },
+        {
+          id: "shaoqun",
+          name: "邵群",
+          alias: ["邵总", "邵大少"],
+          category: "娘娘腔",
+          rank: "核心成员",
+          level: "S",
+          role: "核心人物",
+          faction: "邵氏家族线",
+          era: "现代都市",
+          bio: "《娘娘腔》主线人物之一，关系网络中与李程秀、赵锦辛、黎朔等节点连接紧密。",
+          importance: 9
+        },
+        {
+          id: "lichengxiu",
+          name: "李程秀",
+          alias: ["程秀", "李老师"],
+          category: "娘娘腔",
+          rank: "主星",
+          level: "A+",
+          role: "伴侣/主角",
+          faction: "情感修复线",
+          era: "现代都市",
+          bio: "《娘娘腔》主线人物之一，与邵群构成主要情感关系，也与黎朔形成跨作品友人关系。",
+          importance: 8
+        },
+        {
+          id: "zhaojinxin",
+          name: "赵锦辛",
+          alias: ["甜辛", "赵总"],
+          category: "谁把谁当真",
+          rank: "核心成员",
+          level: "S",
+          role: "核心人物",
+          faction: "赵家/邵家线",
+          era: "现代都市",
+          bio: "《谁把谁当真》主线人物之一，与黎朔是主要情感线，并与邵群存在家族关联。",
+          importance: 9
+        },
+        {
+          id: "lishuo",
+          name: "黎朔",
+          alias: ["黎叔叔", "黎先生"],
+          category: "谁把谁当真",
+          rank: "主星",
+          level: "A+",
+          role: "伴侣/主角",
+          faction: "成熟理性线",
+          era: "现代都市",
+          bio: "《谁把谁当真》主线人物之一，和赵锦辛构成主要关系，也常被放在 188 群像的交叉讨论中。",
+          importance: 8
+        },
+        {
+          id: "songjuhan",
+          name: "宋居寒",
+          alias: ["寒寒", "宋天王"],
+          category: "一醉经年",
+          rank: "核心成员",
+          level: "S",
+          role: "核心人物",
+          faction: "娱乐圈线",
+          era: "现代都市",
+          bio: "《一醉经年》主线人物之一，娱乐圈星域的高亮节点，与何故构成主要情感关系。",
+          importance: 9
+        },
+        {
+          id: "hegu",
+          name: "何故",
+          alias: ["何工", "故故"],
+          category: "一醉经年",
+          rank: "主星",
+          level: "A+",
+          role: "伴侣/主角",
+          faction: "娱乐圈线",
+          era: "现代都市",
+          bio: "《一醉经年》主线人物之一，与宋居寒的长期关系是该星域最重要的连线。",
+          importance: 8
+        },
+        {
+          id: "yuanyang",
+          name: "原炀",
+          alias: ["原小狼狗", "原少"],
+          category: "针锋对决",
+          rank: "核心成员",
+          level: "S",
+          role: "核心人物",
+          faction: "商战职场线",
+          era: "现代都市",
+          bio: "《针锋对决》主线人物之一，与顾青裴形成强对抗到深绑定的关系。",
+          importance: 9
+        },
+        {
+          id: "guqingpei",
+          name: "顾青裴",
+          alias: ["顾总", "顾青裴"],
+          category: "针锋对决",
+          rank: "主星",
+          level: "A+",
+          role: "伴侣/主角",
+          faction: "商战职场线",
+          era: "现代都市",
+          bio: "《针锋对决》主线人物之一，职业身份鲜明，是职场星域的重要节点。",
+          importance: 8
+        },
+        {
+          id: "luoyi",
+          name: "洛羿",
+          alias: ["小辉哥的洛羿", "洛小少爷"],
+          category: "附加遗产",
+          rank: "核心成员",
+          level: "S",
+          role: "核心人物",
+          faction: "遗产/家族线",
+          era: "现代都市",
+          bio: "《附加遗产》主线人物之一，关系线兼具家族、成长与情感张力。",
+          importance: 9
+        },
+        {
+          id: "wenxiaohui",
+          name: "温小辉",
+          alias: ["小辉哥", "Adrian"],
+          category: "附加遗产",
+          rank: "主星",
+          level: "A+",
+          role: "伴侣/主角",
+          faction: "遗产/家族线",
+          era: "现代都市",
+          bio: "《附加遗产》主线人物之一，与洛羿之间构成该星域的核心连线。",
+          importance: 8
+        },
+        {
+          id: "yufengcheng",
+          name: "俞风城",
+          alias: ["俞少", "风城"],
+          category: "小白杨",
+          rank: "核心成员",
+          level: "S",
+          role: "核心人物",
+          faction: "军旅成长线",
+          era: "现代都市",
+          bio: "《小白杨》主线人物之一，和白新羽构成军旅成长星域的核心关系。",
+          importance: 8
+        },
+        {
+          id: "baixinyu",
+          name: "白新羽",
+          alias: ["小白", "白新羽"],
+          category: "小白杨",
+          rank: "主星",
+          level: "A+",
+          role: "伴侣/主角",
+          faction: "军旅成长线",
+          era: "现代都市",
+          bio: "《小白杨》主线人物之一，与俞风城的成长线连接到简隋英的亲友网络。",
+          importance: 8
+        },
+        {
+          id: "zhouxiang",
+          name: "周翔",
+          alias: ["翔哥", "替身线主星"],
+          category: "职业替身",
+          rank: "主星",
+          level: "A+",
+          role: "伴侣/主角",
+          faction: "娱乐圈线",
+          era: "现代都市",
+          bio: "《职业替身》主线人物之一，是替身、身份和命运重构星域的中心节点。",
+          importance: 8
+        },
+        {
+          id: "yanmingxiu",
+          name: "晏明修",
+          alias: ["晏少", "明修"],
+          category: "职业替身",
+          rank: "核心成员",
+          level: "S",
+          role: "核心人物",
+          faction: "娱乐圈线",
+          era: "现代都市",
+          bio: "《职业替身》主线人物之一，与周翔构成该星域最亮的关系线。",
+          importance: 8
+        },
+        {
+          id: "gongyingxian",
+          name: "宫应弦",
+          alias: ["宫博士", "宫警官"],
+          category: "火焰戎装",
+          rank: "核心成员",
+          level: "S",
+          role: "核心人物",
+          faction: "刑侦消防线",
+          era: "现代都市",
+          bio: "《火焰戎装》主线人物之一，和任燚构成刑侦与消防交织的高亮节点。",
+          importance: 8
+        },
+        {
+          id: "renyi",
+          name: "任燚",
+          alias: ["任队", "火焰星"],
+          category: "火焰戎装",
+          rank: "主星",
+          level: "A+",
+          role: "伴侣/主角",
+          faction: "刑侦消防线",
+          era: "现代都市",
+          bio: "《火焰戎装》主线人物之一，与宫应弦共同承载职业协作和情感关系。",
+          importance: 8
+        },
+        {
+          id: "liyu",
+          name: "李玉",
+          alias: ["玉玉", "李家线"],
+          category: "你却爱着一个SB",
+          rank: "核心成员",
+          level: "S",
+          role: "核心人物",
+          faction: "简李家族线",
+          era: "现代都市",
+          bio: "《你却爱着一个SB》主线人物之一，与简隋英构成该星域的关键关系。",
+          importance: 8
+        },
+        {
+          id: "jiansuiying",
+          name: "简隋英",
+          alias: ["简哥", "简总"],
+          category: "你却爱着一个SB",
+          rank: "主星",
+          level: "A+",
+          role: "伴侣/主角",
+          faction: "简李家族线",
+          era: "现代都市",
+          bio: "《你却爱着一个SB》主线人物之一，也是连接白新羽、简隋林等亲友节点的重要星体。",
+          importance: 8
+        },
+        {
+          id: "zhoujinxing",
+          name: "周谨行",
+          alias: ["周总", "谨行"],
+          category: "老婆孩子热炕头",
+          rank: "核心成员",
+          level: "S",
+          role: "核心人物",
+          faction: "家庭线",
+          era: "现代都市",
+          bio: "《老婆孩子热炕头》主线人物之一，家庭、责任和伴侣关系是该星域的主轴。",
+          importance: 7
+        },
+        {
+          id: "dingxiaowei",
+          name: "丁小伟",
+          alias: ["丁哥", "小伟"],
+          category: "老婆孩子热炕头",
+          rank: "主星",
+          level: "A+",
+          role: "伴侣/主角",
+          faction: "家庭线",
+          era: "现代都市",
+          bio: "《老婆孩子热炕头》主线人物之一，与周谨行形成家庭星域的核心连线。",
+          importance: 7
+        },
+        {
+          id: "jiansuilin",
+          name: "简隋林",
+          alias: ["简家线", "亲友节点"],
+          category: "亲友/组织",
+          rank: "支线节点",
+          level: "A",
+          role: "家族/亲友",
+          faction: "简李家族线",
+          era: "现代都市",
+          bio: "简家关系中的重要支线节点，在示例数据里用于展示亲友、家族类对象如何接入星图。",
+          importance: 5
+        },
+        {
+          id: "entertainment",
+          name: "娱乐圈星域",
+          alias: ["演艺圈", "职业星云"],
+          category: "亲友/组织",
+          rank: "对象节点",
+          level: "B",
+          role: "组织/概念",
+          faction: "娱乐圈线",
+          era: "现代都市",
+          bio: "用于串联《一醉经年》《职业替身》等具有娱乐行业背景的示例对象节点。",
+          importance: 4
+        },
+        {
+          id: "business",
+          name: "商战职场星域",
+          alias: ["职场线", "商业星云"],
+          category: "亲友/组织",
+          rank: "对象节点",
+          level: "B",
+          role: "组织/概念",
+          faction: "商战职场线",
+          era: "现代都市",
+          bio: "用于连接商业、职场、家族资源等关系，是星图里可扩展的对象节点。",
+          importance: 4
+        },
+        {
+          id: "service",
+          name: "刑侦消防星域",
+          alias: ["消防线", "刑侦线"],
+          category: "亲友/组织",
+          rank: "对象节点",
+          level: "B",
+          role: "组织/概念",
+          faction: "刑侦消防线",
+          era: "现代都市",
+          bio: "用于承接职业协作、案件和行动类关系，体现对象节点也可以参与关系网络。",
+          importance: 4
+        },
+        {
+          id: "repair",
+          name: "情感修复星云",
+          alias: ["追妻火葬场", "关系弧线"],
+          category: "亲友/组织",
+          rank: "主题节点",
+          level: "B",
+          role: "组织/概念",
+          faction: "情感修复线",
+          era: "主题概念",
+          bio: "抽象主题节点，示范如何把主题、事件或概念也放入同一张关系图里。",
+          importance: 5
+        }
+      ],
+      edges: [
+        { source: "group188", target: "shaoqun", relation: "成员", event: "188 群像核心成员" },
+        { source: "group188", target: "zhaojinxin", relation: "成员", event: "188 群像核心成员" },
+        { source: "group188", target: "songjuhan", relation: "成员", event: "188 群像核心成员" },
+        { source: "group188", target: "yuanyang", relation: "成员", event: "188 群像核心成员" },
+        { source: "group188", target: "luoyi", relation: "成员", event: "188 群像核心成员" },
+        { source: "group188", target: "yufengcheng", relation: "成员", event: "188 群像核心成员" },
+        { source: "group188", target: "yanmingxiu", relation: "成员", event: "188 群像核心成员" },
+        { source: "group188", target: "gongyingxian", relation: "成员", event: "188 群像核心成员" },
+        { source: "group188", target: "liyu", relation: "成员", event: "188 群像核心成员" },
+        { source: "group188", target: "zhoujinxing", relation: "成员", event: "188 群像核心成员" },
+        { source: "shaoqun", target: "lichengxiu", relation: "主线关系", event: "《娘娘腔》核心情感线" },
+        { source: "zhaojinxin", target: "lishuo", relation: "主线关系", event: "《谁把谁当真》核心情感线" },
+        { source: "songjuhan", target: "hegu", relation: "主线关系", event: "《一醉经年》核心情感线" },
+        { source: "yuanyang", target: "guqingpei", relation: "主线关系", event: "《针锋对决》核心情感线" },
+        { source: "luoyi", target: "wenxiaohui", relation: "主线关系", event: "《附加遗产》核心情感线" },
+        { source: "yufengcheng", target: "baixinyu", relation: "主线关系", event: "《小白杨》核心情感线" },
+        { source: "yanmingxiu", target: "zhouxiang", relation: "主线关系", event: "《职业替身》核心情感线" },
+        { source: "gongyingxian", target: "renyi", relation: "主线关系", event: "《火焰戎装》核心情感线" },
+        { source: "liyu", target: "jiansuiying", relation: "主线关系", event: "《你却爱着一个SB》核心情感线" },
+        { source: "zhoujinxing", target: "dingxiaowei", relation: "主线关系", event: "《老婆孩子热炕头》核心情感线" },
+        { source: "shaoqun", target: "zhaojinxin", relation: "家族关联", event: "邵家与赵家关系线" },
+        { source: "lishuo", target: "lichengxiu", relation: "友人/支持", event: "跨作品情感支持线" },
+        { source: "jiansuiying", target: "baixinyu", relation: "亲属", event: "简白家族关系线" },
+        { source: "jiansuiying", target: "jiansuilin", relation: "家族关系", event: "简家支线关系" },
+        { source: "liyu", target: "jiansuilin", relation: "交错关系", event: "简李家族星域交叉线" },
+        { source: "songjuhan", target: "entertainment", relation: "职业归属", event: "歌手与娱乐行业" },
+        { source: "yanmingxiu", target: "entertainment", relation: "职业归属", event: "演艺圈关系线" },
+        { source: "zhouxiang", target: "entertainment", relation: "职业归属", event: "替身与演员身份" },
+        { source: "yuanyang", target: "business", relation: "职场关联", event: "商业与家族资源" },
+        { source: "guqingpei", target: "business", relation: "职场关联", event: "职业身份与商战线" },
+        { source: "zhaojinxin", target: "business", relation: "职场关联", event: "商业人物关系" },
+        { source: "gongyingxian", target: "service", relation: "职业协作", event: "刑侦线" },
+        { source: "renyi", target: "service", relation: "职业协作", event: "消防线" },
+        { source: "shaoqun", target: "repair", relation: "主题关联", event: "关系修复主题" },
+        { source: "songjuhan", target: "repair", relation: "主题关联", event: "关系修复主题" },
+        { source: "yuanyang", target: "repair", relation: "主题关联", event: "关系拉扯与修复" },
+        { source: "luoyi", target: "repair", relation: "主题关联", event: "成长与关系修复" },
+        { source: "liyu", target: "repair", relation: "主题关联", event: "关系修复主题" }
+      ]
+    };
+
+    const categoryColors = {
+      "群像核心": "#ffe0a3",
+      "娘娘腔": "#ffbd73",
+      "谁把谁当真": "#ffc7dc",
+      "一醉经年": "#9edcff",
+      "针锋对决": "#8eead7",
+      "附加遗产": "#c6b8ff",
+      "小白杨": "#a9f2aa",
+      "职业替身": "#ffd47d",
+      "火焰戎装": "#ff936e",
+      "你却爱着一个SB": "#f4edff",
+      "老婆孩子热炕头": "#ddc399",
+      "亲友/组织": "#b9d4ff"
+    };
+
+    const levelOrder = { "S+": 0, S: 1, "A+": 2, A: 3, B: 4 };
+    const canvas = document.getElementById("starMap");
+    const ctx = canvas.getContext("2d");
+    const searchInput = document.getElementById("searchInput");
+    const searchResults = document.getElementById("searchResults");
+    const showAllBtn = document.getElementById("showAllBtn");
+    const rotateBtn = document.getElementById("rotateBtn");
+    const layoutBtn = document.getElementById("layoutBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const closePanelBtn = document.getElementById("closePanelBtn");
+    const toastEl = document.getElementById("toast");
+    const detailName = document.getElementById("detailName");
+    const detailAlias = document.getElementById("detailAlias");
+    const detailTags = document.getElementById("detailTags");
+    const detailBio = document.getElementById("detailBio");
+    const detailRelations = document.getElementById("detailRelations");
+    const visibleCount = document.getElementById("visibleCount");
+    const importantList = document.getElementById("importantList");
+    const categoryFilters = document.getElementById("categoryFilters");
+    const roleFilters = document.getElementById("roleFilters");
+    const levelFilters = document.getElementById("levelFilters");
+
+    const nodeMap = new Map(graphData.nodes.map((node) => [node.id, node]));
+    const degree = new Map(graphData.nodes.map((node) => [node.id, 0]));
+    graphData.edges.forEach((edge) => {
+      degree.set(edge.source, (degree.get(edge.source) || 0) + 1);
+      degree.set(edge.target, (degree.get(edge.target) || 0) + 1);
+    });
+
+    const categories = [...new Set(graphData.nodes.map((node) => node.category))];
+    const roles = [...new Set(graphData.nodes.map((node) => node.role))];
+    const levels = [...new Set(graphData.nodes.map((node) => node.level))].sort((a, b) => levelOrder[a] - levelOrder[b]);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const state = {
+      width: 0,
+      height: 0,
+      dpr: 1,
+      view: { x: 0, y: 0, scale: 0.92, rotation: -0.08 },
+      autoRotate: !reducedMotion,
+      layout: "nebula",
+      selectedId: "group188",
+      hoveredId: null,
+      filters: { category: "all", role: "all", level: "all" },
+      pointer: { isDown: false, moved: false, x: 0, y: 0, lastX: 0, lastY: 0 },
+      stars: [],
+      dust: [],
+      toastTimer: null,
+      lastFrame: performance.now()
+    };
+
+    function hashNumber(value) {
+      let hash = 2166136261;
+      for (let i = 0; i < value.length; i += 1) {
+        hash ^= value.charCodeAt(i);
+        hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+      }
+      return Math.abs(hash >>> 0);
+    }
+
+    function seededRandom(seed) {
+      let value = seed % 2147483647;
+      if (value <= 0) value += 2147483646;
+      return function next() {
+        value = (value * 16807) % 2147483647;
+        return (value - 1) / 2147483646;
+      };
+    }
+
+    function hexToRgb(hex) {
+      const clean = hex.replace("#", "");
+      const value = parseInt(clean, 16);
+      return {
+        r: (value >> 16) & 255,
+        g: (value >> 8) & 255,
+        b: value & 255
+      };
+    }
+
+    function rgba(hex, alpha) {
+      const { r, g, b } = hexToRgb(hex);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function getColor(node) {
+      return categoryColors[node.category] || "#dcecff";
+    }
+
+    function setupLayouts() {
+      const anchors = {
+        "群像核心": { x: 0, y: 0 },
+        "娘娘腔": { x: -350, y: -160 },
+        "谁把谁当真": { x: -210, y: -390 },
+        "一醉经年": { x: 170, y: -385 },
+        "针锋对决": { x: 385, y: -130 },
+        "附加遗产": { x: 365, y: 205 },
+        "小白杨": { x: 80, y: 390 },
+        "职业替身": { x: -220, y: 360 },
+        "火焰戎装": { x: -435, y: 120 },
+        "你却爱着一个SB": { x: -70, y: 115 },
+        "老婆孩子热炕头": { x: 205, y: 35 },
+        "亲友/组织": { x: 0, y: 560 }
+      };
+      const grouped = new Map();
+      graphData.nodes.forEach((node) => {
+        if (!grouped.has(node.category)) grouped.set(node.category, []);
+        grouped.get(node.category).push(node);
+      });
+      grouped.forEach((nodes, category) => {
+        const anchor = anchors[category] || { x: 0, y: 0 };
+        nodes.forEach((node, index) => {
+          const rand = seededRandom(hashNumber(node.id));
+          const angle = (Math.PI * 2 * index) / Math.max(nodes.length, 2) + rand() * 0.9;
+          const radius = category === "群像核心" ? 0 : 42 + rand() * 34 + index * 2;
+          node.x = anchor.x + Math.cos(angle) * radius;
+          node.y = anchor.y + Math.sin(angle) * radius;
+          node.nebula = { x: node.x, y: node.y };
+        });
+      });
+
+      const sorted = [...graphData.nodes].sort((a, b) => {
+        const byLevel = levelOrder[a.level] - levelOrder[b.level];
+        return byLevel || b.importance - a.importance;
+      });
+      const ringByLevel = { "S+": 0, S: 205, "A+": 370, A: 520, B: 670 };
+      sorted.forEach((node, index) => {
+        const ring = ringByLevel[node.level] ?? 560;
+        const categoryIndex = Math.max(0, categories.indexOf(node.category));
+        const baseAngle = categoryIndex / categories.length * Math.PI * 2 - Math.PI / 2;
+        const localOffset = ((index % 4) - 1.5) * 0.16;
+        node.layered = {
+          x: Math.cos(baseAngle + localOffset) * ring,
+          y: Math.sin(baseAngle + localOffset) * ring
+        };
+        if (node.id === "group188") {
+          node.layered = { x: 0, y: 0 };
+        }
+      });
+    }
+
+    function generateBackground() {
+      const rand = seededRandom(1882026);
+      const area = Math.max(1, state.width * state.height);
+      const starCount = Math.min(760, Math.max(260, Math.floor(area / 2800)));
+      state.stars = Array.from({ length: starCount }, (_, index) => {
+        const warm = rand() > 0.76;
+        const blue = rand() > 0.84;
+        return {
+          x: rand() * state.width,
+          y: rand() * state.height,
+          size: 0.35 + Math.pow(rand(), 2.2) * 2.2,
+          twinkle: rand() * Math.PI * 2,
+          color: warm ? "#ffd79a" : blue ? "#9ddcff" : "#f4fbff",
+          alpha: 0.28 + rand() * 0.7
+        };
+      });
+      state.dust = Array.from({ length: 56 }, (_, index) => ({
+        x: rand() * state.width,
+        y: rand() * state.height,
+        radius: 90 + rand() * 260,
+        color: rand() > 0.52 ? "#6aa6ce" : "#d1a763",
+        alpha: 0.018 + rand() * 0.038
+      }));
+    }
+
+    function resizeCanvas() {
+      state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+      state.width = window.innerWidth;
+      state.height = window.innerHeight;
+      canvas.width = Math.floor(state.width * state.dpr);
+      canvas.height = Math.floor(state.height * state.dpr);
+      canvas.style.width = `${state.width}px`;
+      canvas.style.height = `${state.height}px`;
+      ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+      generateBackground();
+    }
+
+    function currentTarget(node) {
+      return state.layout === "layered" ? node.layered : node.nebula;
+    }
+
+    function updateLayoutPositions() {
+      graphData.nodes.forEach((node) => {
+        const target = currentTarget(node);
+        node.x += (target.x - node.x) * 0.08;
+        node.y += (target.y - node.y) * 0.08;
+      });
+    }
+
+    function worldToScreen(x, y) {
+      const cos = Math.cos(state.view.rotation);
+      const sin = Math.sin(state.view.rotation);
+      const rx = x * cos - y * sin;
+      const ry = x * sin + y * cos;
+      return {
+        x: state.width / 2 + (rx + state.view.x) * state.view.scale,
+        y: state.height / 2 + (ry + state.view.y) * state.view.scale
+      };
+    }
+
+    function screenToWorld(x, y) {
+      const rx = (x - state.width / 2) / state.view.scale - state.view.x;
+      const ry = (y - state.height / 2) / state.view.scale - state.view.y;
+      const cos = Math.cos(state.view.rotation);
+      const sin = Math.sin(state.view.rotation);
+      return {
+        x: rx * cos + ry * sin,
+        y: -rx * sin + ry * cos
+      };
+    }
+
+    function isNodeVisible(node) {
+      const { category, role, level } = state.filters;
+      return (category === "all" || node.category === category)
+        && (role === "all" || node.role === role)
+        && (level === "all" || node.level === level);
+    }
+
+    function isEdgeVisible(edge) {
+      return isNodeVisible(nodeMap.get(edge.source)) && isNodeVisible(nodeMap.get(edge.target));
+    }
+
+    function nodeRadius(node) {
+      const d = degree.get(node.id) || 0;
+      return Math.min(28, 7 + d * 1.7 + node.importance * 0.65);
+    }
+
+    function drawBackground(now) {
+      ctx.clearRect(0, 0, state.width, state.height);
+      const base = ctx.createLinearGradient(0, 0, state.width, state.height);
+      base.addColorStop(0, "#01040c");
+      base.addColorStop(0.42, "#061326");
+      base.addColorStop(1, "#020610");
+      ctx.fillStyle = base;
+      ctx.fillRect(0, 0, state.width, state.height);
+
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      state.dust.forEach((cloud) => {
+        const drift = Math.sin(now * 0.00005 + cloud.x) * 14;
+        const gradient = ctx.createRadialGradient(cloud.x + drift, cloud.y, 0, cloud.x + drift, cloud.y, cloud.radius);
+        gradient.addColorStop(0, rgba(cloud.color, cloud.alpha * 2.8));
+        gradient.addColorStop(0.45, rgba(cloud.color, cloud.alpha));
+        gradient.addColorStop(1, rgba(cloud.color, 0));
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(cloud.x + drift, cloud.y, cloud.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.translate(state.width * 0.5, state.height * 0.5);
+      ctx.rotate(-0.34);
+      const river = ctx.createLinearGradient(-state.width, 0, state.width, 0);
+      river.addColorStop(0, "rgba(145, 190, 219, 0)");
+      river.addColorStop(0.22, "rgba(93, 145, 179, 0.08)");
+      river.addColorStop(0.48, "rgba(188, 216, 235, 0.18)");
+      river.addColorStop(0.78, "rgba(69, 111, 149, 0.08)");
+      river.addColorStop(1, "rgba(145, 190, 219, 0)");
+      ctx.fillStyle = river;
+      ctx.filter = "blur(18px)";
+      ctx.fillRect(-state.width, -70, state.width * 2, 150);
+      ctx.filter = "none";
+      ctx.restore();
+
+      state.stars.forEach((star) => {
+        const pulse = 0.76 + Math.sin(now * 0.0012 + star.twinkle) * 0.24;
+        ctx.globalAlpha = star.alpha * pulse;
+        ctx.fillStyle = star.color;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+        if (star.size > 1.7) {
+          ctx.globalAlpha = star.alpha * 0.35 * pulse;
+          ctx.strokeStyle = star.color;
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.moveTo(star.x - star.size * 3, star.y);
+          ctx.lineTo(star.x + star.size * 3, star.y);
+          ctx.moveTo(star.x, star.y - star.size * 3);
+          ctx.lineTo(star.x, star.y + star.size * 3);
+          ctx.stroke();
+        }
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    function drawEdges() {
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      graphData.edges.forEach((edge, index) => {
+        const source = nodeMap.get(edge.source);
+        const target = nodeMap.get(edge.target);
+        const sourcePos = worldToScreen(source.x, source.y);
+        const targetPos = worldToScreen(target.x, target.y);
+        const selected = edge.source === state.selectedId || edge.target === state.selectedId;
+        const visible = isEdgeVisible(edge);
+        const dx = targetPos.x - sourcePos.x;
+        const dy = targetPos.y - sourcePos.y;
+        const distance = Math.hypot(dx, dy) || 1;
+        const bend = ((index % 5) - 2) * 0.035;
+        const cx = (sourcePos.x + targetPos.x) / 2 - dy * bend;
+        const cy = (sourcePos.y + targetPos.y) / 2 + dx * bend;
+        const color = selected ? "#ffe1a3" : getColor(source);
+        const alpha = visible ? (selected ? 0.74 : 0.24) : 0.045;
+        const gradient = ctx.createLinearGradient(sourcePos.x, sourcePos.y, targetPos.x, targetPos.y);
+        gradient.addColorStop(0, rgba(getColor(source), alpha));
+        gradient.addColorStop(0.5, rgba(color, Math.min(0.86, alpha + 0.1)));
+        gradient.addColorStop(1, rgba(getColor(target), alpha));
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = selected ? 1.55 : 0.85;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = selected ? 18 : 8;
+        ctx.beginPath();
+        ctx.moveTo(sourcePos.x, sourcePos.y);
+        ctx.quadraticCurveTo(cx, cy, targetPos.x, targetPos.y);
+        ctx.stroke();
+
+        if (selected && visible && state.view.scale > 0.44 && distance > 68) {
+          drawEdgeLabel(edge.relation, cx, cy, color);
+        }
+      });
+      ctx.restore();
+    }
+
+    function drawEdgeLabel(text, x, y, color) {
+      ctx.save();
+      ctx.font = "12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+      const width = ctx.measureText(text).width + 16;
+      const height = 22;
+      ctx.fillStyle = "rgba(3, 10, 22, 0.68)";
+      ctx.strokeStyle = rgba(color, 0.32);
+      ctx.lineWidth = 1;
+      roundRect(ctx, x - width / 2, y - height / 2, width, height, 6);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#fff7dd";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, x, y + 0.5);
+      ctx.restore();
+    }
+
+    function drawNodes(now) {
+      const ordered = [...graphData.nodes].sort((a, b) => nodeRadius(a) - nodeRadius(b));
+      ordered.forEach((node) => {
+        const pos = worldToScreen(node.x, node.y);
+        const visible = isNodeVisible(node);
+        const selected = node.id === state.selectedId;
+        const hovered = node.id === state.hoveredId;
+        const radius = nodeRadius(node) * state.view.scale;
+        const color = getColor(node);
+        const pulse = 0.92 + Math.sin(now * 0.002 + hashNumber(node.id)) * 0.08;
+        const alpha = visible ? 1 : 0.12;
+        const halo = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, Math.max(20, radius * 4.2));
+        halo.addColorStop(0, rgba(color, selected ? 0.62 * alpha : 0.36 * alpha));
+        halo.addColorStop(0.42, rgba(color, selected ? 0.22 * alpha : 0.11 * alpha));
+        halo.addColorStop(1, rgba(color, 0));
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, Math.max(22, radius * 4.2), 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowColor = color;
+        ctx.shadowBlur = selected ? 30 : hovered ? 22 : 14;
+        ctx.fillStyle = rgba(color, visible ? 0.9 : 0.22);
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, Math.max(4.5, radius * pulse), 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowBlur = selected ? 22 : 10;
+        ctx.fillStyle = visible ? "#fffdf6" : "rgba(255,255,255,0.24)";
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, Math.max(2.2, radius * 0.38), 0, Math.PI * 2);
+        ctx.fill();
+
+        const flare = Math.max(10, radius * (selected ? 2.5 : 1.65));
+        ctx.strokeStyle = rgba(visible ? "#fff8e5" : color, selected ? 0.82 : hovered ? 0.62 : 0.36);
+        ctx.lineWidth = selected ? 1.25 : 0.85;
+        ctx.beginPath();
+        ctx.moveTo(pos.x - flare, pos.y);
+        ctx.lineTo(pos.x + flare, pos.y);
+        ctx.moveTo(pos.x, pos.y - flare);
+        ctx.lineTo(pos.x, pos.y + flare);
+        if (selected || node.importance >= 8) {
+          ctx.moveTo(pos.x - flare * 0.62, pos.y - flare * 0.62);
+          ctx.lineTo(pos.x + flare * 0.62, pos.y + flare * 0.62);
+          ctx.moveTo(pos.x + flare * 0.62, pos.y - flare * 0.62);
+          ctx.lineTo(pos.x - flare * 0.62, pos.y + flare * 0.62);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        if (visible && (selected || hovered || radius > 10 || state.view.scale > 0.8)) {
+          drawNodeLabel(node, pos, radius, selected || hovered);
+        }
+      });
+    }
+
+    function drawNodeLabel(node, pos, radius, active) {
+      const label = node.name;
+      ctx.save();
+      ctx.font = `${active ? 700 : 600} ${active ? 14 : 12}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+      const width = Math.min(140, ctx.measureText(label).width + 16);
+      const height = active ? 26 : 22;
+      const x = pos.x - width / 2;
+      const y = pos.y + radius + 11;
+      ctx.fillStyle = active ? "rgba(3, 10, 22, 0.72)" : "rgba(3, 10, 22, 0.45)";
+      ctx.strokeStyle = active ? rgba(getColor(node), 0.4) : "rgba(180, 212, 255, 0.12)";
+      roundRect(ctx, x, y, width, height, 6);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = active ? "#fff7dd" : "#d8e8f8";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, pos.x, y + height / 2 + 0.5, width - 10);
+      ctx.restore();
+    }
+
+    function roundRect(context, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      context.beginPath();
+      context.moveTo(x + r, y);
+      context.arcTo(x + width, y, x + width, y + height, r);
+      context.arcTo(x + width, y + height, x, y + height, r);
+      context.arcTo(x, y + height, x, y, r);
+      context.arcTo(x, y, x + width, y, r);
+      context.closePath();
+    }
+
+    function draw(now) {
+      const delta = Math.min(40, now - state.lastFrame);
+      state.lastFrame = now;
+      if (state.autoRotate && !state.pointer.isDown) {
+        state.view.rotation += delta * 0.000035;
+      }
+      updateLayoutPositions();
+      drawBackground(now);
+      drawEdges();
+      drawNodes(now);
+      requestAnimationFrame(draw);
+    }
+
+    function hitTest(screenX, screenY) {
+      let nearest = null;
+      let nearestDistance = Infinity;
+      graphData.nodes.forEach((node) => {
+        if (!isNodeVisible(node)) return;
+        const pos = worldToScreen(node.x, node.y);
+        const radius = Math.max(12, nodeRadius(node) * state.view.scale + 8);
+        const distance = Math.hypot(pos.x - screenX, pos.y - screenY);
+        if (distance < radius && distance < nearestDistance) {
+          nearest = node;
+          nearestDistance = distance;
+        }
+      });
+      return nearest;
+    }
+
+    function focusNode(id, options = {}) {
+      const node = nodeMap.get(id);
+      if (!node) return;
+      state.selectedId = id;
+      const cos = Math.cos(state.view.rotation);
+      const sin = Math.sin(state.view.rotation);
+      const rx = node.x * cos - node.y * sin;
+      const ry = node.x * sin + node.y * cos;
+      state.view.x += (-rx - state.view.x) * (options.instant ? 1 : 0.92);
+      state.view.y += (-ry - state.view.y) * (options.instant ? 1 : 0.92);
+      if (options.zoom !== false) {
+        const targetScale = window.innerWidth < 760 ? 0.92 : 1.02;
+        state.view.scale += (targetScale - state.view.scale) * 0.7;
+      }
+      updateDetails(node);
+      document.body.classList.add("panel-open");
+      if (options.toast) showToast(`已定位：${node.name}`);
+    }
+
+    function updateDetails(node) {
+      detailName.textContent = node.name;
+      detailAlias.textContent = Array.isArray(node.alias) && node.alias.length ? `别名 / 称号：${node.alias.join(" · ")}` : "别名 / 称号：暂无";
+      detailBio.textContent = node.bio || "";
+      detailTags.innerHTML = "";
+      [
+        node.category,
+        node.rank,
+        node.level,
+        node.role,
+        node.faction,
+        node.era
+      ].filter(Boolean).forEach((tagText) => {
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = tagText;
+        detailTags.appendChild(tag);
+      });
+
+      const relations = graphData.edges
+        .filter((edge) => edge.source === node.id || edge.target === node.id)
+        .sort((a, b) => {
+          const otherA = a.source === node.id ? a.target : a.source;
+          const otherB = b.source === node.id ? b.target : b.source;
+          return (degree.get(otherB) || 0) - (degree.get(otherA) || 0);
+        });
+      detailRelations.innerHTML = "";
+      if (!relations.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty-state";
+        empty.textContent = "暂无关系线。";
+        detailRelations.appendChild(empty);
+        return;
+      }
+      relations.forEach((edge) => {
+        const otherId = edge.source === node.id ? edge.target : edge.source;
+        const other = nodeMap.get(otherId);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "relation-button";
+        button.innerHTML = `<strong>${edge.relation} · ${other.name}</strong><span>${edge.event || edge.description || ""}</span>`;
+        button.addEventListener("click", () => focusNode(other.id, { toast: true }));
+        detailRelations.appendChild(button);
+      });
+    }
+
+    function renderFilter(container, type, values) {
+      container.innerHTML = "";
+      const all = document.createElement("button");
+      all.type = "button";
+      all.className = "chip is-active";
+      all.dataset.filterType = type;
+      all.dataset.value = "all";
+      all.textContent = "全部";
+      container.appendChild(all);
+      values.forEach((value) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chip";
+        button.dataset.filterType = type;
+        button.dataset.value = value;
+        const color = type === "category" ? (categoryColors[value] || "#dcecff") : "#b9d4ff";
+        button.innerHTML = `<i style="color:${color}; background:${color}"></i>${value}`;
+        container.appendChild(button);
+      });
+    }
+
+    function updateFilterButtons() {
+      document.querySelectorAll(".chip[data-filter-type]").forEach((button) => {
+        const type = button.dataset.filterType;
+        button.classList.toggle("is-active", state.filters[type] === button.dataset.value);
+      });
+      const visibleNodes = graphData.nodes.filter(isNodeVisible);
+      visibleCount.textContent = `${visibleNodes.length} / ${graphData.nodes.length} 个节点`;
+    }
+
+    function syncSelectionWithFilters() {
+      const selected = nodeMap.get(state.selectedId);
+      if (selected && isNodeVisible(selected)) return;
+      const nextNode = graphData.nodes
+        .filter(isNodeVisible)
+        .sort((a, b) => b.importance - a.importance || (degree.get(b.id) || 0) - (degree.get(a.id) || 0))[0];
+      if (nextNode) focusNode(nextNode.id, { zoom: false });
+    }
+
+    function clearFilters() {
+      state.filters = { category: "all", role: "all", level: "all" };
+      updateFilterButtons();
+    }
+
+    function searchableText(node) {
+      return [
+        node.name,
+        ...(Array.isArray(node.alias) ? node.alias : [node.alias]),
+        node.category,
+        node.rank,
+        node.level,
+        node.role,
+        node.faction,
+        node.era,
+        node.bio
+      ].filter(Boolean).join(" ").toLowerCase();
+    }
+
+    function searchScore(node, query) {
+      const name = node.name.toLowerCase();
+      const aliases = (Array.isArray(node.alias) ? node.alias : [node.alias]).filter(Boolean).map((value) => value.toLowerCase());
+      if (name === query) return 1000;
+      if (aliases.some((alias) => alias === query)) return 940;
+      if (name.includes(query)) return 900;
+      if (aliases.some((alias) => alias.includes(query))) return 840;
+      if ([node.category, node.role, node.level, node.rank, node.faction, node.era].filter(Boolean).join(" ").toLowerCase().includes(query)) return 620;
+      if (searchableText(node).includes(query)) return 320;
+      return 0;
+    }
+
+    function renderSearchResults() {
+      const query = searchInput.value.trim().toLowerCase();
+      searchResults.innerHTML = "";
+      if (!query) {
+        searchResults.classList.remove("is-open");
+        return;
+      }
+      const matches = graphData.nodes
+        .map((node) => ({ node, score: searchScore(node, query) }))
+        .filter((item) => item.score > 0)
+        .sort((a, b) => b.score - a.score || b.node.importance - a.node.importance || (degree.get(b.node.id) || 0) - (degree.get(a.node.id) || 0))
+        .map((item) => item.node)
+        .slice(0, 9);
+      if (!matches.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.style.padding = "10px";
+        empty.textContent = "没有匹配的节点";
+        searchResults.appendChild(empty);
+        searchResults.classList.add("is-open");
+        return;
+      }
+      matches.forEach((node) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "result-button";
+        button.innerHTML = `
+          <span class="result-dot" style="color:${getColor(node)}; background:${getColor(node)}"></span>
+          <span class="result-name">${node.name}</span>
+          <span class="result-meta">${node.category}</span>
+        `;
+        button.addEventListener("click", () => {
+          clearFilters();
+          focusNode(node.id, { toast: true });
+          searchInput.value = "";
+          searchResults.classList.remove("is-open");
+        });
+        searchResults.appendChild(button);
+      });
+      searchResults.classList.add("is-open");
+    }
+
+    function renderImportantList() {
+      const important = [...graphData.nodes]
+        .sort((a, b) => {
+          const scoreA = (degree.get(a.id) || 0) * 2 + a.importance;
+          const scoreB = (degree.get(b.id) || 0) * 2 + b.importance;
+          return scoreB - scoreA;
+        })
+        .slice(0, 10);
+      importantList.innerHTML = "";
+      important.forEach((node) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "important-button";
+        button.innerHTML = `
+          <span class="important-orb" style="color:${getColor(node)}; background:${getColor(node)}"></span>
+          <span class="important-text">
+            <span class="important-name">${node.name}</span>
+            <span class="important-meta">${degree.get(node.id) || 0} 条关系 · ${node.level}</span>
+          </span>
+        `;
+        button.addEventListener("click", () => {
+          clearFilters();
+          focusNode(node.id, { toast: true });
+        });
+        importantList.appendChild(button);
+      });
+    }
+
+    function showToast(message) {
+      toastEl.textContent = message;
+      toastEl.classList.add("is-visible");
+      clearTimeout(state.toastTimer);
+      state.toastTimer = setTimeout(() => toastEl.classList.remove("is-visible"), 1400);
+    }
+
+    function resetView() {
+      state.view.scale = window.innerWidth < 760 ? 0.72 : 0.92;
+      state.view.rotation = -0.08;
+      focusNode("group188", { instant: true, zoom: false });
+      showToast("视图已重置");
+    }
+
+    function bindEvents() {
+      window.addEventListener("resize", resizeCanvas);
+
+      canvas.addEventListener("pointerdown", (event) => {
+        canvas.setPointerCapture(event.pointerId);
+        state.pointer.isDown = true;
+        state.pointer.moved = false;
+        state.pointer.x = event.clientX;
+        state.pointer.y = event.clientY;
+        state.pointer.lastX = event.clientX;
+        state.pointer.lastY = event.clientY;
+        canvas.classList.add("dragging");
+      });
+
+      canvas.addEventListener("pointermove", (event) => {
+        const hit = hitTest(event.clientX, event.clientY);
+        state.hoveredId = hit ? hit.id : null;
+        if (!state.pointer.isDown) return;
+        const dx = event.clientX - state.pointer.lastX;
+        const dy = event.clientY - state.pointer.lastY;
+        if (Math.hypot(event.clientX - state.pointer.x, event.clientY - state.pointer.y) > 4) {
+          state.pointer.moved = true;
+        }
+        state.view.x += dx / state.view.scale;
+        state.view.y += dy / state.view.scale;
+        state.pointer.lastX = event.clientX;
+        state.pointer.lastY = event.clientY;
+      });
+
+      canvas.addEventListener("pointerup", (event) => {
+        canvas.releasePointerCapture(event.pointerId);
+        canvas.classList.remove("dragging");
+        const wasDrag = state.pointer.moved;
+        state.pointer.isDown = false;
+        if (!wasDrag) {
+          const hit = hitTest(event.clientX, event.clientY);
+          if (hit) focusNode(hit.id);
+        }
+      });
+
+      canvas.addEventListener("pointercancel", () => {
+        state.pointer.isDown = false;
+        canvas.classList.remove("dragging");
+      });
+
+      canvas.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        const before = screenToWorld(event.clientX, event.clientY);
+        const nextScale = Math.max(0.34, Math.min(2.6, state.view.scale * Math.exp(-event.deltaY * 0.001)));
+        state.view.scale = nextScale;
+        const cos = Math.cos(state.view.rotation);
+        const sin = Math.sin(state.view.rotation);
+        const rx = before.x * cos - before.y * sin;
+        const ry = before.x * sin + before.y * cos;
+        state.view.x = (event.clientX - state.width / 2) / state.view.scale - rx;
+        state.view.y = (event.clientY - state.height / 2) / state.view.scale - ry;
+      }, { passive: false });
+
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".search-wrap")) {
+          searchResults.classList.remove("is-open");
+        }
+      });
+
+      searchInput.addEventListener("input", renderSearchResults);
+      searchInput.addEventListener("focus", renderSearchResults);
+
+      document.querySelector(".filter-row").addEventListener("click", (event) => {
+        const button = event.target.closest(".chip[data-filter-type]");
+        if (!button) return;
+        state.filters[button.dataset.filterType] = button.dataset.value;
+        updateFilterButtons();
+        syncSelectionWithFilters();
+        showToast(button.dataset.value === "all" ? "已显示该组全部节点" : `已筛选：${button.dataset.value}`);
+      });
+
+      showAllBtn.addEventListener("click", () => {
+        clearFilters();
+        showToast("已显示全部节点");
+      });
+
+      rotateBtn.addEventListener("click", () => {
+        state.autoRotate = !state.autoRotate;
+        rotateBtn.classList.toggle("is-active", state.autoRotate);
+        rotateBtn.lastChild.textContent = state.autoRotate ? " 停止旋转" : " 开始旋转";
+      });
+
+      layoutBtn.addEventListener("click", () => {
+        state.layout = state.layout === "nebula" ? "layered" : "nebula";
+        layoutBtn.lastChild.textContent = state.layout === "nebula" ? " 分层布局" : " 星云布局";
+        showToast(state.layout === "nebula" ? "已切换到星云布局" : "已切换到分层布局");
+      });
+
+      resetBtn.addEventListener("click", resetView);
+
+      closePanelBtn.addEventListener("click", () => {
+        document.body.classList.remove("panel-open");
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          searchResults.classList.remove("is-open");
+          document.body.classList.remove("panel-open");
+        }
+      });
+    }
+
+    function init() {
+      setupLayouts();
+      resizeCanvas();
+      renderFilter(categoryFilters, "category", categories);
+      renderFilter(roleFilters, "role", roles);
+      renderFilter(levelFilters, "level", levels);
+      renderImportantList();
+      updateFilterButtons();
+      updateDetails(nodeMap.get(state.selectedId));
+      document.body.classList.add("panel-open");
+      rotateBtn.classList.toggle("is-active", state.autoRotate);
+      rotateBtn.lastChild.textContent = state.autoRotate ? " 停止旋转" : " 开始旋转";
+      resetView();
+      bindEvents();
+      requestAnimationFrame(draw);
+    }
+
+    init();
+  </script>
+</body>
+</html>
